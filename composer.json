@@ -1,0 +1,75 @@
+{
+    "type": "library",
+    "name": "sweetchuck/po-parser",
+    "description": "@todo project description",
+    "keywords": [
+        "gettext",
+        "po",
+        "pot",
+        "parser"
+    ],
+    "authors": [
+        {
+            "name": "Andor",
+            "role": "Maintainer",
+            "homepage": "https://github.com/Sweetchuck"
+        }
+    ],
+    "homepage": "https://github.com/Sweetchuck/po-parser",
+    "support": {
+        "source": "https://github.com/Sweetchuck/po-parser",
+        "issues": "https://github.com/Sweetchuck/po-parser/issues"
+    },
+    "license": "GPL-3.0-or-later",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "sweetchuck/git-hooks": true
+        },
+        "preferred-install": "dist",
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "repositories": [],
+    "require": {
+        "php": ">=7.4",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "symfony/polyfill-php80": "^1.24"
+    },
+    "require-dev": {
+        "codeception/codeception": "^4.1",
+        "codeception/module-asserts": "^2.0",
+        "consolidation/robo": "^3.0",
+        "nuvoleweb/robo-config": "^2.0",
+        "phpunit/phpunit": "^9.5",
+        "squizlabs/php_codesniffer": "^3.6",
+        "sweetchuck/git-hooks": "2.x-dev",
+        "sweetchuck/robo-git": "2.x-dev",
+        "sweetchuck/robo-phpcs": "2.x-dev",
+        "sweetchuck/utils": "2.x-dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sweetchuck\\PoParser\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Sweetchuck\\PoParser\\Tests\\Unit\\": "tests/unit/",
+            "Sweetchuck\\PoParser\\Tests\\": "tests/_support/"
+        }
+    },
+    "scripts": {
+        "clear": [
+            "@clear:backend"
+        ],
+        "clear:backend": "rm --recursive --force ./vendor/"
+    },
+    "scripts-descriptions": {
+        "clear": "Deletes every third-party codes.",
+        "clear:backend": "Deletes Composer related codes."
+    },
+    "extra": []
+}

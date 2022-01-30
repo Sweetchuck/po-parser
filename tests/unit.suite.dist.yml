@@ -1,0 +1,8 @@
+actor: 'UnitTester'
+
+#namespace: 'Sweetchuck\PoParser\Tests\Unit'
+
+modules:
+    enabled:
+        - 'Asserts'
+        - '\Sweetchuck\PoParser\Tests\Helper\Unit'

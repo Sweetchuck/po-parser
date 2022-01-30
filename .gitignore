@@ -1,0 +1,9 @@
+
+/tests/_log/
+/tests/_support/_generated/
+/tests/*.suite.yml
+/codeception.yml
+
+/vendor/
+
+/robo.yml
