@@ -48,8 +48,8 @@
         "sweetchuck/git-hooks": "2.x-dev",
         "sweetchuck/robo-git": "2.x-dev",
         "sweetchuck/robo-phpcs": "2.x-dev",
-        "sweetchuck/utils": "2.x-dev",
-        "symfony/var-dumper": "^5.4"
+        "sweetchuck/utils": "1.x-dev",
+        "symfony/var-dumper": "^5.4 || ^6.0"
     },
     "autoload": {
         "psr-4": {
