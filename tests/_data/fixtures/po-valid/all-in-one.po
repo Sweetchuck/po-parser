@@ -22,6 +22,8 @@ msgid_plural "@count minutes"
 msgstr[0] "1 perc"
 msgstr[1] "@count perc"
 
+
+
 msgid ""
 "Line one\n"
 "Line two\n"
@@ -46,3 +48,4 @@ msgstr ""
 "Egy @entity-type törlése azt eredményezi, hogy bármilyen kimenet, "
 "amely ugyanezt az entitástípust használja továbbra is, annak az "
 "alapértelmezett megjelenés lesz a megjelenítési beállítása."
+

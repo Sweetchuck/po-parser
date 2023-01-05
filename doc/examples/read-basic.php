@@ -5,6 +5,12 @@ declare(strict_types = 1);
 use Sweetchuck\PoParser\PoHeader;
 use Sweetchuck\PoParser\PoReader;
 
+if (php_sapi_name() !== 'cli') {
+    return;
+}
+
+require __DIR__ . '/../../vendor/autoload.php';
+
 $fileContent = <<<'PO'
 # Comment 1.
 # Comment 2.
@@ -18,7 +24,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n!=1);\n"
-"Last-Translator: M <me@example.comy\n"
+"Last-Translator: Me <me@example.com>\n"
 "Language: hu_HU\n"
 "X-Generator: My hand\n"
 
@@ -30,6 +36,7 @@ msgid_plural "@count minutes"
 msgstr[0] "1 perc"
 msgstr[1] "@count perc"
 
+# Comment line 1.
 msgctxt "Sort order"
 msgid "Order"
 msgstr "Rendezés"
@@ -41,8 +48,6 @@ msgstr ""
 "Line one\n"
 "Line two\n"
 PO;
-
-require __DIR__ . '/../../vendor/autoload.php';
 
 $fileHandler = fopen('php://memory', 'w+');
 fwrite($fileHandler, $fileContent);

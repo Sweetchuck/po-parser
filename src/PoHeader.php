@@ -11,10 +11,7 @@ namespace Sweetchuck\PoParser;
  */
 class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSerializable, \Stringable
 {
-    /**
-     * @return static
-     */
-    public static function createFromIterable(iterable $values)
+    public static function createFromIterable(iterable $values): static
     {
         $self = new static();
         foreach ($values as $key => $value) {
@@ -24,10 +21,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
         return $self;
     }
 
-    /**
-     * @return static
-     */
-    public static function createFromString(string $string)
+    public static function createFromString(string $string): static
     {
         $poHeader = new PoHeader();
         if ($string === '') {
@@ -46,26 +40,20 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
         return $poHeader;
     }
 
-    /**
-     * @return static
-     */
-    public static function createFromItem(PoItem $poItem)
+    public static function createFromItem(PoItem $poItem): static
     {
         assert($poItem->msgid === ['']);
 
         return static::createFromString(implode("\n", $poItem->msgstr['']));
     }
 
-    /**
-     * @var array
-     */
     protected array $items = [];
 
     //region ArrayAccess
     /**
      * {@inheritdoc}
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return isset($this->items[$this->internalKey($offset)]);
     }
@@ -73,7 +61,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
     /**
      * {@inheritdoc}
      */
-    public function offsetGet($offset)
+    public function offsetGet($offset): ?string
     {
         $internalKey = $this->internalKey($offset);
 
@@ -83,7 +71,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
     /**
      * {@inheritdoc}
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         if ($value === null) {
             $this->offsetUnset($offset);
@@ -102,7 +90,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
     /**
      * {@inheritdoc}
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         $internalKey = $this->internalKey($offset);
         unset($this->items[$internalKey]);
@@ -110,7 +98,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
     //endregion
 
     // region Countable
-    public function count()
+    public function count(): int
     {
         return count($this->items);
     }
@@ -120,7 +108,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
     /**
      * {@inheritdoc}
      */
-    public function getIterator()
+    public function getIterator(): \ArrayIterator
     {
         return new \ArrayIterator($this->jsonSerialize());
     }
@@ -130,7 +118,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
     /**
      * {@inheritdoc}
      */
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         $values = [];
         foreach ($this->items as $item) {
@@ -145,7 +133,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
     /**
      * {@inheritdoc}
      */
-    public function __toString()
+    public function __toString(): string
     {
         $lines = [];
         foreach ($this->items as $item) {
@@ -156,16 +144,13 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
     }
     //endregion
 
-    // region Common keys.
+    //region Common keys.
     public function getProjectIdVersion(): ?string
     {
         return $this->offsetGet('Project-Id-Version');
     }
 
-    /**
-     * @return $this
-     */
-    public function setProjectIdVersion(?string $value)
+    public function setProjectIdVersion(?string $value): static
     {
         $this->offsetSet('Project-Id-Version', $value);
 
@@ -177,10 +162,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
         return $this->offsetGet('Report-Msgid-Bugs-To');
     }
 
-    /**
-     * @return $this
-     */
-    public function setReportMsgidBugsTo(?string $value)
+    public function setReportMsgidBugsTo(?string $value): static
     {
         $this->offsetSet('Report-Msgid-Bugs-To', $value);
 
@@ -192,10 +174,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
         return $this->offsetGet('POT-Creation-Date');
     }
 
-    /**
-     * @return $this
-     */
-    public function setPotCreationDate(?string $value)
+    public function setPotCreationDate(?string $value): static
     {
         $this->offsetSet('POT-Creation-Date', $value);
 
@@ -207,10 +186,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
         return $this->offsetGet('PO-Revision-Date');
     }
 
-    /**
-     * @return $this
-     */
-    public function setPoRevisionDate(?string $value)
+    public function setPoRevisionDate(?string $value): static
     {
         $this->offsetSet('PO-Revision-Date', $value);
 
@@ -222,10 +198,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
         return $this->offsetGet('Last-Translator');
     }
 
-    /**
-     * @return $this
-     */
-    public function setLastTranslator(?string $value)
+    public function setLastTranslator(?string $value): static
     {
         $this->offsetSet('Last-Translator', $value);
 
@@ -237,10 +210,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
         return $this->offsetGet('Language-Team');
     }
 
-    /**
-     * @return $this
-     */
-    public function setLanguageTeam(?string $value)
+    public function setLanguageTeam(?string $value): static
     {
         $this->offsetSet('Language-Team', $value);
 
@@ -252,10 +222,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
         return $this->offsetGet('Language');
     }
 
-    /**
-     * @return $this
-     */
-    public function setLanguage(?string $value)
+    public function setLanguage(?string $value): static
     {
         $this->offsetSet('Language', $value);
 
@@ -267,10 +234,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
         return $this->offsetGet('Content-Type');
     }
 
-    /**
-     * @return $this
-     */
-    public function setContentType(?string $value)
+    public function setContentType(?string $value): static
     {
         $this->offsetSet('Content-Type', $value);
 
@@ -282,10 +246,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
         return $this->offsetGet('Content-Transfer-Encoding');
     }
 
-    /**
-     * @return $this
-     */
-    public function setContentTransferEncoding(?string $value)
+    public function setContentTransferEncoding(?string $value): static
     {
         $this->offsetSet('Content-Transfer-Encoding', $value);
 
@@ -297,10 +258,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
         return $this->offsetGet('Mime-Version');
     }
 
-    /**
-     * @return $this
-     */
-    public function setMimeVersion(?string $value)
+    public function setMimeVersion(?string $value): static
     {
         $this->offsetSet('MIME-Version', $value);
 
@@ -312,10 +270,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
         return $this->offsetGet('Plural-Forms');
     }
 
-    /**
-     * @return $this
-     */
-    public function setPluralForms(?string $value)
+    public function setPluralForms(?string $value): static
     {
         $this->offsetSet('Plural-Forms', $value);
 

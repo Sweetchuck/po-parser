@@ -141,7 +141,7 @@ class PoItemTest extends Unit
     /**
      * @dataProvider casesToString
      */
-    public function testToString(string $expected, array $state)
+    public function testToString(string $expected, array $state): void
     {
         $poItem = PoItem::__set_state($state);
 
