@@ -23,7 +23,7 @@ namespace Sweetchuck\PoParser;
 class PoReader implements PoReaderInterface
 {
 
-    public static function __set_state($values)
+    public static function __set_state($values): static
     {
         $self = new static();
 
@@ -57,7 +57,7 @@ class PoReader implements PoReaderInterface
      */
     protected int $key = -1;
 
-    public function setKey(int $key)
+    public function setKey(int $key): static
     {
         $this->key = $key;
 
@@ -88,7 +88,7 @@ class PoReader implements PoReaderInterface
         return $this->positions;
     }
 
-    public function setPositions(array $positions)
+    public function setPositions(array $positions): static
     {
         $this->positions = $positions;
 
@@ -112,10 +112,8 @@ class PoReader implements PoReaderInterface
 
     /**
      * @param null|resource $fileHandler
-     *
-     * @return $this
      */
-    public function setFileHandler($fileHandler)
+    public function setFileHandler($fileHandler): static
     {
         assert(is_resource($fileHandler));
         assert(get_resource_type($fileHandler) === 'stream');
@@ -128,7 +126,7 @@ class PoReader implements PoReaderInterface
     //endregion
 
     //region jsonSerialize
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return [
             'key' => $this->key(),
@@ -139,7 +137,7 @@ class PoReader implements PoReaderInterface
     //endregion
 
     //region Stringable
-    public function __toString()
+    public function __toString(): string
     {
         $items = [];
         foreach ($this as $poItem) {
@@ -220,7 +218,7 @@ class PoReader implements PoReaderInterface
     }
     // endregion
 
-    protected function readNext()
+    protected function readNext(): static
     {
         $this->key++;
 
@@ -333,7 +331,7 @@ class PoReader implements PoReaderInterface
         return $lines;
     }
 
-    protected function readNextLine()
+    protected function readNextLine(): static
     {
         if (feof($this->fileHandler)) {
             $this->currentLine = null;

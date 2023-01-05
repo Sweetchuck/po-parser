@@ -6,7 +6,7 @@ namespace Sweetchuck\PoParser;
 
 class PoItem implements \Stringable, \JsonSerializable
 {
-    public static function __set_state($values)
+    public static function __set_state($values): static
     {
         $self = new static();
         $propertyNames = [
@@ -26,10 +26,7 @@ class PoItem implements \Stringable, \JsonSerializable
         return $self;
     }
 
-    /**
-     * @return static
-     */
-    public static function createFromHeader(PoHeader $header)
+    public static function createFromHeader(PoHeader $header): static
     {
         $self = new static();
         $self->msgid[] = '';
@@ -103,7 +100,7 @@ class PoItem implements \Stringable, \JsonSerializable
         return $result;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
         return [
             'comments' => $this->comments,

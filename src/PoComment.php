@@ -6,7 +6,7 @@ namespace Sweetchuck\PoParser;
 
 class PoComment implements \JsonSerializable, \Stringable
 {
-    public static function __set_state($values)
+    public static function __set_state($values): static
     {
         $self = new static();
         if (array_key_exists('items', $values)) {
@@ -39,7 +39,7 @@ class PoComment implements \JsonSerializable, \Stringable
         return $this->lastId;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         $content = '';
         foreach ($this->items as $item) {
@@ -83,8 +83,9 @@ class PoComment implements \JsonSerializable, \Stringable
         return $content;
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): array
     {
+        // @todo What about the ::$lastId?
         return [
             'items' => $this->items,
             'counters' => $this->counters,
@@ -96,10 +97,7 @@ class PoComment implements \JsonSerializable, \Stringable
         return explode("\n", rtrim((string) $this));
     }
 
-    /**
-     * @return $this
-     */
-    public function setTranslator(string $comment, int $weight = 0, ?string $id = null)
+    public function setTranslator(string $comment, int $weight = 0, ?string $id = null): static
     {
         $type = 'translator';
         $this->lastId = $id ?? sprintf("$type:%d", $this->counters[$type]++);
@@ -113,10 +111,7 @@ class PoComment implements \JsonSerializable, \Stringable
         return $this;
     }
 
-    /**
-     * @return $this
-     */
-    public function setFlag(string $name, string $comment = '', int $weight = 0)
+    public function setFlag(string $name, string $comment = '', int $weight = 0): static
     {
         $type = 'flag';
 
@@ -130,10 +125,7 @@ class PoComment implements \JsonSerializable, \Stringable
         return $this;
     }
 
-    /**
-     * @return $this
-     */
-    public function setExtracted(string $comment, int $weight = 0, ?string $id = null)
+    public function setExtracted(string $comment, int $weight = 0, ?string $id = null): static
     {
         $type = 'extracted';
         $this->lastId = $id ?? sprintf("$type:%d", $this->counters[$type]++);
@@ -147,10 +139,7 @@ class PoComment implements \JsonSerializable, \Stringable
         return $this;
     }
 
-    /**
-     * @return $this
-     */
-    public function setReference(array $references, int $weight = 0, ?string $id = null)
+    public function setReference(array $references, int $weight = 0, ?string $id = null): static
     {
         $type = 'reference';
         $this->lastId = $id ?? sprintf("$type:%d", $this->counters[$type]++);
@@ -164,10 +153,7 @@ class PoComment implements \JsonSerializable, \Stringable
         return $this;
     }
 
-    /**
-     * @return $this
-     */
-    public function setPrevious(PoItem $poItem, int $weight = 0, ?string $id = null)
+    public function setPrevious(PoItem $poItem, int $weight = 0, ?string $id = null): static
     {
         $type = 'previous';
         $this->lastId = $id ?? sprintf("$type:%d", $this->counters[$type]++);
@@ -181,10 +167,7 @@ class PoComment implements \JsonSerializable, \Stringable
         return $this;
     }
 
-    /**
-     * @return $this
-     */
-    public function delete(string $id)
+    public function delete(string $id): static
     {
         unset($this->items[$id]);
 

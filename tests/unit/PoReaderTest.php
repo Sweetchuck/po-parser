@@ -18,26 +18,35 @@ class PoReaderTest extends Unit
     public function casesParse(): array
     {
         $fixturesDir = codecept_data_dir('fixtures');
+        $cases = [];
+        foreach (glob("$fixturesDir/po-valid/*.po") as $fileName) {
+            $inputPo = file_get_contents($fileName);
+            $cases[basename($fileName)] = [
+                $this->convertInputPoToExpected($inputPo),
+                $inputPo,
+            ];
+        }
 
-        return [
-            'all-in-one' => [
-                file_get_contents("$fixturesDir/po-valid/all-in-one.po"),
-            ],
-        ];
+        return $cases;
     }
 
     /**
      * @dataProvider casesParse
      */
-    public function testParse(string $expected): void
+    public function testParse(string $expected, string $inputPo): void
     {
         $fileHandler = fopen('php://memory', 'w+');
-        fwrite($fileHandler, $expected);
+        fwrite($fileHandler, $inputPo);
 
         $poReader = new PoReader();
         $poReader->setFileHandler($fileHandler);
 
-        $this->tester->assertSame($expected, "$poReader");
+        $this->tester->assertSame(
+            $expected,
+            (string) $poReader,
+        );
+
+        fclose($fileHandler);
     }
 
     public function casesParseExtra(): array
@@ -476,5 +485,20 @@ class PoReaderTest extends Unit
         $poItem = $poReader->current();
         $this->tester->assertSame(0, $poReader->key());
         $this->tester->assertSame(['Hello world 1'], $poItem->msgid);
+    }
+
+    protected function convertInputPoToExpected(string $inputPo): string
+    {
+        return preg_replace(
+            [
+                '/\n{2,}$/',
+                '/\n{3,}/',
+            ],
+            [
+                "\n",
+                "\n\n",
+            ],
+            $inputPo,
+        );
     }
 }
