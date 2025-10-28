@@ -8,23 +8,29 @@ namespace Sweetchuck\PoParser;
  * Gettext PO/POT file parser.
  *
  * WARNING: The internal state of this class is not strictly protected.
- * That means, an inconsistent state can be caused by using one of the following
+ * That means an inconsistent state can be caused by using one of the following
  * methods:
- * - ::__set_state()
- * - ::setFileHandler()
- * - ::setPositions()
- * - ::setKey()
- * So be careful, and don't do anything stupid.
- * For example set a file handler, which is not at the beginning of the file,
- * without proper ::key and ::positions values. It still works though, but can
- * cause side effects.
+ * - static::__set_state()
+ * - static::setFileHandler()
+ * - static::setPositions()
+ * - static::setKey()
+ * So be careful and don't do anything stupid.
+ * For example, set a file handler, which is not at the beginning of the file,
+ * without proper static::key and static::positions values.
+ * It still works, but can cause side effects.
  * In the other hand, this openness gives flexibility.
+ *
+ * @implements \Sweetchuck\PoParser\PoReaderInterface<int, \Sweetchuck\PoParser\PoItem>
  */
 class PoReader implements PoReaderInterface
 {
 
-    public static function __set_state($values): static
+    /**
+     * {@inheritdoc}
+     */
+    public static function __set_state(array $values): static
     {
+        // @phpstan-ignore-next-line
         $self = new static();
 
         if (array_key_exists('positions', $values)) {
@@ -53,10 +59,13 @@ class PoReader implements PoReaderInterface
     /**
      * Current PoItem index.
      *
-     * @var int
+     * @var int<-1, max>
      */
     protected int $key = -1;
 
+    /**
+     * {@inheritdoc}
+     */
     public function setKey(int $key): static
     {
         $this->key = $key;
@@ -77,17 +86,23 @@ class PoReader implements PoReaderInterface
 
     // region positions
     /**
-     * Key is the POItem index, value is the ftell result.
+     * Key is the POItem index, value is the \ftell() result.
      *
-     * @var array
+     * @var array<int<0, max>, int<0, max>>
      */
     protected array $positions = [];
 
+    /**
+     * {@inheritdoc}
+     */
     public function getPositions(): array
     {
         return $this->positions;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function setPositions(array $positions): static
     {
         $this->positions = $positions;
@@ -125,18 +140,24 @@ class PoReader implements PoReaderInterface
     }
     //endregion
 
-    //region jsonSerialize
+    //region \JsonSerializable
+    /**
+     * @phpstan-return sweetchuck-po-reader-reader-state-export
+     */
     public function jsonSerialize(): array
     {
         return [
-            'key' => $this->key(),
             'positions' => $this->getPositions(),
             'isAllReaded' => $this->isAllReaded,
+            'key' => $this->key(),
         ];
     }
     //endregion
 
-    //region Stringable
+    //region \Stringable
+    /**
+     * {@inheritdoc}
+     */
     public function __toString(): string
     {
         $items = [];
@@ -149,26 +170,43 @@ class PoReader implements PoReaderInterface
     //endregion
 
     // region Iterator
+    /**
+     * {@inheritdoc}
+     */
     public function current(): ?PoItem
     {
         return $this->current;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function next(): void
     {
         $this->readNext();
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @phpstan-return int<-1, max>
+     */
     public function key(): int
     {
         return $this->key;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function valid(): bool
     {
         return $this->current !== null;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function rewind(): void
     {
         fseek($this->fileHandler, $this->positions[0] ?? 0);
@@ -178,9 +216,15 @@ class PoReader implements PoReaderInterface
     }
     // endregion
 
-    // region SeekableIterator
+    // region \SeekableIterator
+    /**
+     * {@inheritdoc}
+     *
+     * @phpstan-param int<0, max> $offset
+     */
     public function seek($offset): void
     {
+        // @phpstan-ignore-next-line
         if ($offset < 0) {
             throw new \OutOfBoundsException(
                 "offset has to be >= 0; current $offset",
@@ -253,6 +297,9 @@ class PoReader implements PoReaderInterface
         return $this;
     }
 
+    /**
+     * @return array<string>
+     */
     protected function readComments(): array
     {
         $lines = [];
@@ -266,21 +313,33 @@ class PoReader implements PoReaderInterface
         return $lines;
     }
 
+    /**
+     * @return array<string>
+     */
     protected function readMsgCtxt(): array
     {
         return $this->readKeyword('msgctxt');
     }
 
+    /**
+     * @return array<string>
+     */
     protected function readMsgid(): array
     {
         return $this->readKeyword('msgid');
     }
 
+    /**
+     * @return array<string>
+     */
     protected function readMsgidPlural(): array
     {
         return $this->readKeyword('msgid_plural');
     }
 
+    /**
+     * @return array<int|string, array<string>>
+     */
     protected function readMsgstr(): array
     {
         $keyword = 'msgstr';
@@ -301,6 +360,9 @@ class PoReader implements PoReaderInterface
         return $items;
     }
 
+    /**
+     * @return array<string>
+     */
     protected function readKeyword(string $keyword): array
     {
         $lines = [];

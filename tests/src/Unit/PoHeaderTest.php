@@ -4,19 +4,16 @@ declare(strict_types = 1);
 
 namespace Sweetchuck\PoParser\Tests\Unit;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Sweetchuck\PoParser\PoHeader;
 use Sweetchuck\PoParser\PoItem;
 use Sweetchuck\PoParser\PoReader;
-use Sweetchuck\PoParser\Tests\UnitTester;
 
 /**
  * @covers \Sweetchuck\PoParser\PoHeader
  */
-class PoHeaderTest extends Unit
+class PoHeaderTest extends TestCase
 {
-    protected UnitTester $tester;
-
     public function testAllInOne(): void
     {
         $headerKeyValuePairs = [
@@ -30,40 +27,41 @@ class PoHeaderTest extends Unit
         ]);
         $header = PoHeader::createFromIterable($headerKeyValuePairs);
 
-        $this->tester->assertSame(
+        static::assertSame(
             $headerKeyValuePairs,
             $header->jsonSerialize(),
         );
 
-        $this->tester->assertSame($headerString, (string) $header);
-        $this->tester->assertSame(
+        static::assertSame($headerString, (string) $header);
+        static::assertSame(
             $headerKeyValuePairs,
             (PoHeader::createFromString($headerString))->jsonSerialize(),
         );
 
-        $this->tester->assertCount(count($headerKeyValuePairs), $header);
+        static::assertCount(count($headerKeyValuePairs), $header);
         foreach ($header as $key => $value) {
-            $this->tester->assertSame($headerKeyValuePairs[$key], $value);
+            static::assertSame($headerKeyValuePairs[$key], $value);
         }
 
-        $this->tester->assertNull($header['nope']);
+        static::assertNull($header['nope']);
 
         foreach (['My-Key-01', 'my-key-01', 'MY-KEY-01', 'my-kEY-01'] as $key) {
-            $this->tester->assertSame('value1', $header[$key]);
-            $this->tester->assertSame('value1', $header->offsetGet($key));
+            static::assertSame('value1', $header[$key]);
+            static::assertSame('value1', $header->offsetGet($key));
         }
 
         foreach (['My-Key-02', 'my-key-02', 'MY-KEY-02', 'my-kEY-02'] as $key) {
-            $this->tester->assertSame('value2', $header[$key]);
-            $this->tester->assertSame('value2', $header->offsetGet($key));
+            static::assertSame('value2', $header[$key]);
+            static::assertSame('value2', $header->offsetGet($key));
         }
 
         $header->offsetSet('mY-key-01', 'value1-new');
-        $this->tester->assertSame('value1-new', $header['mY-KEY-01']);
+        static::assertSame('value1-new', $header['mY-KEY-01']);
 
+        // @phpstan-ignore-next-line
         $header['my-key-01'] = null;
-        $this->tester->assertFalse($header->offsetExists('mY-key-01'));
-        $this->tester->assertNull($header->offsetGet('mY-key-01'));
+        static::assertFalse($header->offsetExists('mY-key-01'));
+        static::assertNull($header->offsetGet('mY-key-01'));
     }
 
     public function testCommonKeys(): void
@@ -71,38 +69,38 @@ class PoHeaderTest extends Unit
         $header = new PoHeader();
 
         $header->setProjectIdVersion('a');
-        $this->tester->assertSame('a', $header->getProjectIdVersion());
-        $this->tester->assertSame('a', $header['Project-Id-version']);
+        static::assertSame('a', $header->getProjectIdVersion());
+        static::assertSame('a', $header['Project-Id-version']);
 
         $header->setReportMsgidBugsTo('b');
-        $this->tester->assertSame('b', $header->getReportMsgidBugsTo());
+        static::assertSame('b', $header->getReportMsgidBugsTo());
 
         $header->setPotCreationDate('c');
-        $this->tester->assertSame('c', $header->getPotCreationDate());
+        static::assertSame('c', $header->getPotCreationDate());
 
         $header->setPoRevisionDate('d');
-        $this->tester->assertSame('d', $header->getPoRevisionDate());
+        static::assertSame('d', $header->getPoRevisionDate());
 
         $header->setLastTranslator('e');
-        $this->tester->assertSame('e', $header->getLastTranslator());
+        static::assertSame('e', $header->getLastTranslator());
 
         $header->setLanguageTeam('f');
-        $this->tester->assertSame('f', $header->getLanguageTeam());
+        static::assertSame('f', $header->getLanguageTeam());
 
         $header->setLanguage('g');
-        $this->tester->assertSame('g', $header->getLanguage());
+        static::assertSame('g', $header->getLanguage());
 
         $header->setContentType('h');
-        $this->tester->assertSame('h', $header->getContentType());
+        static::assertSame('h', $header->getContentType());
 
         $header->setContentTransferEncoding('i');
-        $this->tester->assertSame('i', $header->getContentTransferEncoding());
+        static::assertSame('i', $header->getContentTransferEncoding());
 
         $header->setMimeVersion('j');
-        $this->tester->assertSame('j', $header->getMimeVersion());
+        static::assertSame('j', $header->getMimeVersion());
 
         $header->setPluralForms('k');
-        $this->tester->assertSame('k', $header->getPluralForms());
+        static::assertSame('k', $header->getPluralForms());
     }
 
     public function testLifeCycle(): void
@@ -118,6 +116,7 @@ class PoHeaderTest extends Unit
         ]);
         $poReader = new PoReader();
         $fileHandler = fopen('php://memory', 'w+');
+        static::assertIsResource($fileHandler);
         fwrite($fileHandler, $fileContent);
         $poReader->setFileHandler($fileHandler);
 
@@ -125,15 +124,14 @@ class PoHeaderTest extends Unit
         $poItem = $poReader->current();
         $header = PoHeader::createFromItem($poItem);
 
-        $this->tester->assertSame('MyProject01 (1.2.3)', $header->getProjectIdVersion());
-        $this->tester->assertSame('text/plain; charset=UTF-8', $header->getContentType());
-        $this->tester->assertSame('8bit', $header->getContentTransferEncoding());
-        $this->tester->assertSame('hu_HU', $header->getLanguage());
-        $this->tester->assertSame('nplurals=2; plural=(n!=1);', $header->getPluralForms());
+        static::assertSame('MyProject01 (1.2.3)', $header->getProjectIdVersion());
+        static::assertSame('text/plain; charset=UTF-8', $header->getContentType());
+        static::assertSame('8bit', $header->getContentTransferEncoding());
+        static::assertSame('hu_HU', $header->getLanguage());
+        static::assertSame('nplurals=2; plural=(n!=1);', $header->getPluralForms());
 
         $poItem2 = PoItem::createFromHeader($header);
-        $this->tester->assertSame(
-            $poItem2->msgstr,
+        static::assertSame(
             [
                 '' => [
                     'Project-Id-Version: MyProject01 (1.2.3)\n',
@@ -143,6 +141,7 @@ class PoHeaderTest extends Unit
                     'Plural-Forms: nplurals=2; plural=(n!=1);\n',
                 ],
             ],
+            $poItem2->msgstr,
         );
     }
 }

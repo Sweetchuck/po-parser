@@ -4,18 +4,15 @@ declare(strict_types = 1);
 
 namespace Sweetchuck\PoParser\Tests\Unit;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Sweetchuck\PoParser\PoHeader;
 use Sweetchuck\PoParser\PoItem;
-use Sweetchuck\PoParser\Tests\UnitTester;
 
 /**
  * @covers \Sweetchuck\PoParser\PoItem
  */
-class PoItemTest extends Unit
+class PoItemTest extends TestCase
 {
-    protected UnitTester $tester;
-
     public function testCreateFromHeader(): void
     {
         $header = PoHeader::createFromIterable([
@@ -23,7 +20,7 @@ class PoItemTest extends Unit
             'c' => 'd',
         ]);
         $item = PoItem::createFromHeader($header);
-        $this->tester->assertSame(
+        static::assertSame(
             [
                 'comments' => [],
                 'msgctxt' => [],
@@ -40,6 +37,9 @@ class PoItemTest extends Unit
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function casesToString(): array
     {
         return [
@@ -139,13 +139,15 @@ class PoItemTest extends Unit
     }
 
     /**
+     * @phpstan-param array<string, mixed> $state
+     *
      * @dataProvider casesToString
      */
     public function testToString(string $expected, array $state): void
     {
         $poItem = PoItem::__set_state($state);
 
-        $this->tester->assertSame(
+        static::assertSame(
             $expected,
             "$poItem",
         );
@@ -154,7 +156,7 @@ class PoItemTest extends Unit
     public function testJsonSerialize(): void
     {
         $poItem = new PoItem();
-        $this->tester->assertSame(
+        static::assertSame(
             [
                 'comments' => [],
                 'msgctxt' => [],
@@ -170,7 +172,7 @@ class PoItemTest extends Unit
         $poItem->msgid = ['my id'];
         $poItem->msgidPlural = ['my id plural'];
         $poItem->msgstr = ['' => ['my str']];
-        $this->tester->assertSame(
+        static::assertSame(
             [
                 'comments' => ['# comment 01'],
                 'msgctxt' => ['my context'],

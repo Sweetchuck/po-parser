@@ -1,8 +1,7 @@
-
 version: 2.1
 
 orbs:
-    codecov: 'codecov/codecov@3.0.0'
+    codecov: 'codecov/codecov@5'
 
 .env_app: &env_app
     SHELL: '/bin/bash'
@@ -84,13 +83,11 @@ commands:
                     name: 'Composer - cache restore'
                     keys:
                         - 'composer-{{ checksum "./composer.lock" }}-2'
-
             -
                 run:
                     name: 'Composer - install'
                     command: >
                         composer install --no-progress --ansi
-
             -
                 save_cache:
                     name: 'Composer - cache save'
@@ -98,28 +95,30 @@ commands:
                     paths:
                         - '~/.cache/composer/'
 
-
     lint:
         description: 'Run linters'
         steps:
             -
                 run:
                     name: 'Run linters'
-                    command: '"$(composer config bin-dir)/robo" --ansi lint'
-
+                    command: |
+                        "$(composer config bin-dir)/robo" --ansi lint
     test:
         description: 'Run tests'
         steps:
             -
                 run:
-                    name: 'Codeception - unit'
-                    command: '"$(composer config bin-dir)/robo" --ansi test unit'
-            -   codecov/upload:
+                    name: 'Test - unit'
+                    command: |
+                        "$(composer config bin-dir)/robo" --ansi test unit
+            -
+                codecov/upload:
                     flags: 'unit'
-                    file: './tests/_log/machine/coverage/unit/coverage.xml'
-            -   store_test_results:
+                    files: './reports/machine/unit/coverage/clover.xml'
+            -
+                store_test_results:
                     name: 'Store unit test results'
-                    path: './tests/_log/machine/junit'
+                    path: './reports/machine/unit/result/junit.xml'
 
 jobs:
     build:
