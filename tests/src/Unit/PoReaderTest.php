@@ -4,12 +4,13 @@ declare(strict_types = 1);
 
 namespace Sweetchuck\PoParser\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Sweetchuck\PoParser\PoReader;
 
-/**
- * @covers \Sweetchuck\PoParser\PoReader
- */
+#[CoversClass(PoReader::class)]
 class PoReaderTest extends TestCase
 {
     protected function getFixturesDir(): string
@@ -20,9 +21,9 @@ class PoReaderTest extends TestCase
     /**
      * @return array<string, mixed>
      */
-    public function casesParse(): array
+    public static function casesParse(): array
     {
-        $fixturesDir = $this->getFixturesDir();
+        $fixturesDir = dirname(__DIR__, 2) . '/fixtures';
         $cases = [];
         // @phpstan-ignore-next-line
         foreach (glob("$fixturesDir/po-valid/*.po") as $fileName) {
@@ -31,7 +32,7 @@ class PoReaderTest extends TestCase
                 throw new \RuntimeException("Cannot read file $fileName");
             }
             $cases[basename($fileName)] = [
-                $this->convertInputPoToExpected($inputPo),
+                static::convertInputPoToExpected($inputPo),
                 $inputPo,
             ];
         }
@@ -40,8 +41,9 @@ class PoReaderTest extends TestCase
     }
 
     /**
-     * @dataProvider casesParse
      */
+    #[DataProvider('casesParse')]
+    #[Test]
     public function testParse(string $expected, string $inputPo): void
     {
         $fileHandler = fopen('php://memory', 'w+');
@@ -62,7 +64,7 @@ class PoReaderTest extends TestCase
     /**
      * @return array<string, mixed>
      */
-    public function casesParseExtra(): array
+    public static function casesParseExtra(): array
     {
         return [
             'empty' => [
@@ -115,9 +117,9 @@ class PoReaderTest extends TestCase
 
     /**
      * @phpstan-param array<string, mixed> $expected
-     *
-     * @dataProvider casesParseExtra
      */
+    #[DataProvider('casesParseExtra')]
+    #[Test]
     public function testParseExtra(array $expected, string $fileContent): void
     {
         $fileHandler = fopen('php://memory', 'w+');
@@ -141,7 +143,7 @@ class PoReaderTest extends TestCase
     /**
      * @return array<string, mixed>
      */
-    public function casesSeekEmpty(): array
+    public static function casesSeekEmpty(): array
     {
         return [
             'empty' => [''],
@@ -172,8 +174,9 @@ class PoReaderTest extends TestCase
     }
 
     /**
-     * @dataProvider casesSeekEmpty
      */
+    #[DataProvider('casesSeekEmpty')]
+    #[Test]
     public function testSeekEmpty(string $fileContent): void
     {
         $fileHandler = fopen('php://memory', 'w+');
@@ -223,6 +226,7 @@ class PoReaderTest extends TestCase
         static::assertSame(-1, $poReader->key());
     }
 
+    #[Test]
     public function testSeekEmptyEmpty(): void
     {
         $fileContent = '';
@@ -271,6 +275,7 @@ class PoReaderTest extends TestCase
         static::assertSame(-1, $poReader->key());
     }
 
+    #[Test]
     public function testSeekOneItem(): void
     {
         $fileContent = implode("\n", [
@@ -317,6 +322,7 @@ class PoReaderTest extends TestCase
         static::assertSame(0, $poReader->key());
     }
 
+    #[Test]
     public function testSeekTwoItem(): void
     {
         $fileContent = implode("\n", [
@@ -363,6 +369,7 @@ class PoReaderTest extends TestCase
         static::assertSame(['' => ['Hello világ 1']], $poItem->msgstr);
     }
 
+    #[Test]
     public function testJsonSerialize(): void
     {
         $fileContent = implode("\n", [
@@ -394,6 +401,7 @@ class PoReaderTest extends TestCase
         );
     }
 
+    #[Test]
     public function testSetStateWithKey(): void
     {
         $fileContent = implode("\n", [
@@ -425,6 +433,7 @@ class PoReaderTest extends TestCase
         static::assertSame(['Hello world 1'], $poItem->msgid);
     }
 
+    #[Test]
     public function testSetStateWithoutKey(): void
     {
         $fileContent = implode("\n", [
@@ -456,6 +465,7 @@ class PoReaderTest extends TestCase
         static::assertSame(['Hello world 0'], $poItem->msgid);
     }
 
+    #[Test]
     public function testSetStateContinue(): void
     {
         $fileContent = implode("\n", [
@@ -509,6 +519,7 @@ class PoReaderTest extends TestCase
         );
     }
 
+    #[Test]
     public function testSeekWithoutPositions(): void
     {
         $fileContent = implode("\n", [
@@ -568,7 +579,7 @@ class PoReaderTest extends TestCase
         return $result;
     }
 
-    protected function convertInputPoToExpected(string $inputPo): string
+    protected static function convertInputPoToExpected(string $inputPo): string
     {
         return preg_replace(
             [

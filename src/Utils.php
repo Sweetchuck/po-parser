@@ -19,9 +19,7 @@ class Utils
     }
 
     /**
-     * @param string[] $lines
-     *
-     * @return string
+     * @param array<string> $lines
      */
     public static function linesToPo(array $lines): string
     {
@@ -41,7 +39,7 @@ class Utils
     }
 
     /**
-     * @return string[]
+     * @return array<string>
      */
     public static function explode(string $string, int $lineLength = 0): array
     {

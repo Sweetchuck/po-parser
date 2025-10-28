@@ -4,15 +4,17 @@ declare(strict_types = 1);
 
 namespace Sweetchuck\PoParser\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Sweetchuck\PoParser\PoHeader;
 use Sweetchuck\PoParser\PoItem;
 
-/**
- * @covers \Sweetchuck\PoParser\PoItem
- */
+#[CoversClass(PoItem::class)]
 class PoItemTest extends TestCase
 {
+    #[Test]
     public function testCreateFromHeader(): void
     {
         $header = PoHeader::createFromIterable([
@@ -40,7 +42,7 @@ class PoItemTest extends TestCase
     /**
      * @return array<string, mixed>
      */
-    public function casesToString(): array
+    public static function casesToString(): array
     {
         return [
             'empty' => [
@@ -140,9 +142,9 @@ class PoItemTest extends TestCase
 
     /**
      * @phpstan-param array<string, mixed> $state
-     *
-     * @dataProvider casesToString
      */
+    #[DataProvider('casesToString')]
+    #[Test]
     public function testToString(string $expected, array $state): void
     {
         $poItem = PoItem::__set_state($state);
@@ -153,6 +155,7 @@ class PoItemTest extends TestCase
         );
     }
 
+    #[Test]
     public function testJsonSerialize(): void
     {
         $poItem = new PoItem();

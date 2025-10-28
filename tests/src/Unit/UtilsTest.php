@@ -4,18 +4,19 @@ declare(strict_types = 1);
 
 namespace Sweetchuck\PoParser\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Sweetchuck\PoParser\Utils;
 
-/**
- * @covers \Sweetchuck\PoParser\Utils
- */
+#[CoversClass(Utils::class)]
 class UtilsTest extends TestCase
 {
     /**
      * @return array<string, mixed>
      */
-    public function casesLinesToPo(): array
+    public static function casesLinesToPo(): array
     {
         return [
             'empty' => [
@@ -48,9 +49,9 @@ class UtilsTest extends TestCase
 
     /**
      * @phpstan-param array<string> $lines
-     *
-     * @dataProvider casesLinesToPo
      */
+    #[DataProvider('casesLinesToPo')]
+    #[Test]
     public function testLinesToPo(string $expected, array $lines): void
     {
         static::assertSame(
@@ -62,7 +63,7 @@ class UtilsTest extends TestCase
     /**
      * @return array<string, mixed>
      */
-    public function casesExplode(): array
+    public static function casesExplode(): array
     {
         return [
             'empty' => [
@@ -122,9 +123,9 @@ class UtilsTest extends TestCase
 
     /**
      * @phpstan-param array<string> $expected
-     *
-     * @dataProvider casesExplode
      */
+    #[DataProvider('casesExplode')]
+    #[Test]
     public function testExplode(array $expected, string $string): void
     {
         static::assertSame(

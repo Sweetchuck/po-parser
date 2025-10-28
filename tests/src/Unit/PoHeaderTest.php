@@ -4,16 +4,17 @@ declare(strict_types = 1);
 
 namespace Sweetchuck\PoParser\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Sweetchuck\PoParser\PoHeader;
 use Sweetchuck\PoParser\PoItem;
 use Sweetchuck\PoParser\PoReader;
 
-/**
- * @covers \Sweetchuck\PoParser\PoHeader
- */
+#[CoversClass(PoHeader::class)]
 class PoHeaderTest extends TestCase
 {
+    #[Test]
     public function testAllInOne(): void
     {
         $headerKeyValuePairs = [
@@ -64,6 +65,7 @@ class PoHeaderTest extends TestCase
         static::assertNull($header->offsetGet('mY-key-01'));
     }
 
+    #[Test]
     public function testCommonKeys(): void
     {
         $header = new PoHeader();
@@ -103,6 +105,7 @@ class PoHeaderTest extends TestCase
         static::assertSame('k', $header->getPluralForms());
     }
 
+    #[Test]
     public function testLifeCycle(): void
     {
         $fileContent = implode("\n", [

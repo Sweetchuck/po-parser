@@ -169,7 +169,7 @@ class PoReader implements PoReaderInterface
     }
     //endregion
 
-    // region Iterator
+    // region \Iterator
     /**
      * {@inheritdoc}
      */

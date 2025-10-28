@@ -4,19 +4,20 @@ declare(strict_types = 1);
 
 namespace Sweetchuck\PoParser\Tests\Unit;
 
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Sweetchuck\PoParser\PoComment;
 use Sweetchuck\PoParser\PoItem;
 
-/**
- * @covers \Sweetchuck\PoParser\PoComment
- */
+#[CoversClass(PoComment::class)]
 class PoCommentTest extends TestCase
 {
     /**
      * @return array<string, mixed>
      */
-    public function casesToString(): array
+    public static function casesToString(): array
     {
         return [
             'empty' => [
@@ -93,9 +94,9 @@ class PoCommentTest extends TestCase
 
     /**
      * @phpstan-param array<array{method: string, args: array<mixed>}> $methodCalls
-     *
-     * @dataProvider casesToString
      */
+    #[DataProvider('casesToString')]
+    #[Test]
     public function testToString(string $expected, array $methodCalls): void
     {
         $comment = new PoComment();
@@ -106,6 +107,7 @@ class PoCommentTest extends TestCase
         static::assertSame($expected, (string) $comment);
     }
 
+    #[Test]
     public function testGetLastId(): void
     {
         $comment = new PoComment();
@@ -117,6 +119,7 @@ class PoCommentTest extends TestCase
         static::assertSame('translator:0', $comment->getLastId());
     }
 
+    #[Test]
     public function testSetState(): void
     {
         $comment = PoComment::__set_state([]);
@@ -198,6 +201,7 @@ class PoCommentTest extends TestCase
         );
     }
 
+    #[Test]
     public function testRealLife(): void
     {
         $comment = new PoComment();
