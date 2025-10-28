@@ -4,23 +4,32 @@ declare(strict_types = 1);
 
 namespace Sweetchuck\PoParser\Tests\Unit;
 
-use Codeception\Test\Unit;
+use PHPUnit\Framework\TestCase;
 use Sweetchuck\PoParser\PoReader;
-use Sweetchuck\PoParser\Tests\UnitTester;
 
 /**
  * @covers \Sweetchuck\PoParser\PoReader
  */
-class PoReaderTest extends Unit
+class PoReaderTest extends TestCase
 {
-    protected UnitTester $tester;
+    protected function getFixturesDir(): string
+    {
+        return dirname(__DIR__, 2) . '/fixtures';
+    }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function casesParse(): array
     {
-        $fixturesDir = codecept_data_dir('fixtures');
+        $fixturesDir = $this->getFixturesDir();
         $cases = [];
+        // @phpstan-ignore-next-line
         foreach (glob("$fixturesDir/po-valid/*.po") as $fileName) {
             $inputPo = file_get_contents($fileName);
+            if ($inputPo === false) {
+                throw new \RuntimeException("Cannot read file $fileName");
+            }
             $cases[basename($fileName)] = [
                 $this->convertInputPoToExpected($inputPo),
                 $inputPo,
@@ -36,12 +45,13 @@ class PoReaderTest extends Unit
     public function testParse(string $expected, string $inputPo): void
     {
         $fileHandler = fopen('php://memory', 'w+');
+        static::assertIsResource($fileHandler);
         fwrite($fileHandler, $inputPo);
 
         $poReader = new PoReader();
         $poReader->setFileHandler($fileHandler);
 
-        $this->tester->assertSame(
+        static::assertSame(
             $expected,
             (string) $poReader,
         );
@@ -49,6 +59,9 @@ class PoReaderTest extends Unit
         fclose($fileHandler);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function casesParseExtra(): array
     {
         return [
@@ -101,11 +114,14 @@ class PoReaderTest extends Unit
     }
 
     /**
+     * @phpstan-param array<string, mixed> $expected
+     *
      * @dataProvider casesParseExtra
      */
     public function testParseExtra(array $expected, string $fileContent): void
     {
         $fileHandler = fopen('php://memory', 'w+');
+        static::assertIsResource($fileHandler);
         fwrite($fileHandler, $fileContent);
 
         $poReader = new PoReader();
@@ -114,7 +130,7 @@ class PoReaderTest extends Unit
         $poItem = $poReader->current();
 
         foreach ($expected as $keyword => $expectedValue) {
-            $this->tester->assertSame(
+            static::assertSame(
                 $poItem->$keyword,
                 $expectedValue,
                 "value of poItem::$keyword is correct",
@@ -122,6 +138,9 @@ class PoReaderTest extends Unit
         }
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function casesSeekEmpty(): array
     {
         return [
@@ -158,49 +177,98 @@ class PoReaderTest extends Unit
     public function testSeekEmpty(string $fileContent): void
     {
         $fileHandler = fopen('php://memory', 'w+');
+        static::assertIsResource($fileHandler);
         fwrite($fileHandler, $fileContent);
 
         $poReader = new PoReader();
         $poReader->setFileHandler($fileHandler);
 
-        $this->tester->expectThrowable(
-            new \OutOfBoundsException(
-                'offset has to be >= 0; current -1',
-                1,
-            ),
-            function () use ($poReader) {
-                $poReader->seek(-1);
-            },
-        );
-        $this->tester->assertNull($poReader->current());
-        $this->tester->assertFalse($poReader->valid());
-        $this->tester->assertSame(-1, $poReader->key());
+        try {
+            // @phpstan-ignore-next-line
+            $poReader->seek(-1);
+            $this->fail('Expected OutOfBoundsException');
+        } catch (\OutOfBoundsException $e) {
+            static::assertSame('offset has to be >= 0; current -1', $e->getMessage());
+            static::assertSame(1, $e->getCode());
+        }
 
-        $this->tester->expectThrowable(
-            new \OutOfBoundsException(
-                'maximum offset: -1; requested offset: 0',
-                1,
-            ),
-            function () use ($poReader) {
-                $poReader->seek(0);
-            },
-        );
-        $this->tester->assertNull($poReader->current());
-        $this->tester->assertFalse($poReader->valid());
-        $this->tester->assertSame(-1, $poReader->key());
+        static::assertNull($poReader->current());
+        static::assertFalse($poReader->valid());
+        static::assertSame(-1, $poReader->key());
 
-        $this->tester->expectThrowable(
-            new \OutOfBoundsException(
-                'maximum offset: -1; requested offset: 1',
-                1,
-            ),
-            function () use ($poReader) {
-                $poReader->seek(1);
-            },
-        );
-        $this->tester->assertNull($poReader->current());
-        $this->tester->assertFalse($poReader->valid());
-        $this->tester->assertSame(-1, $poReader->key());
+        try {
+            $poReader->seek(0);
+            $this->fail('Expected OutOfBoundsException');
+        } catch (\Throwable $exception) {
+            static::assertInstanceOf(\OutOfBoundsException::class, $exception);
+            static::assertSame('maximum offset: -1; requested offset: 0', $exception->getMessage());
+            static::assertSame(1, $exception->getCode());
+        }
+
+        static::assertNull($poReader->current());
+        static::assertFalse($poReader->valid());
+        static::assertSame(-1, $poReader->key());
+
+        try {
+            $poReader->seek(1);
+            $this->fail('Expected OutOfBoundsException');
+        } catch (\Throwable $exception) {
+            static::assertInstanceOf(\OutOfBoundsException::class, $exception);
+            static::assertSame('maximum offset: -1; requested offset: 1', $exception->getMessage());
+            static::assertSame(1, $exception->getCode());
+        }
+
+        static::assertNull($poReader->current());
+        static::assertFalse($poReader->valid());
+        static::assertSame(-1, $poReader->key());
+    }
+
+    public function testSeekEmptyEmpty(): void
+    {
+        $fileContent = '';
+        $fileHandler = fopen('php://memory', 'w+');
+        static::assertIsResource($fileHandler);
+        fwrite($fileHandler, $fileContent);
+
+        $poReader = new PoReader();
+        $poReader->setFileHandler($fileHandler);
+
+        try {
+            // @phpstan-ignore-next-line
+            $poReader->seek(-1);
+            $this->fail('Expected OutOfBoundsException');
+        } catch (\OutOfBoundsException $e) {
+            static::assertSame('offset has to be >= 0; current -1', $e->getMessage());
+            static::assertSame(1, $e->getCode());
+        }
+
+        static::assertNull($poReader->current());
+        static::assertFalse($poReader->valid());
+        static::assertSame(-1, $poReader->key());
+
+        try {
+            $poReader->seek(0);
+            $this->fail('Expected OutOfBoundsException');
+        } catch (\OutOfBoundsException $e) {
+            static::assertSame('maximum offset: -1; requested offset: 0', $e->getMessage());
+            static::assertSame(1, $e->getCode());
+        }
+
+        static::assertNull($poReader->current());
+        static::assertFalse($poReader->valid());
+        static::assertSame(-1, $poReader->key());
+
+        try {
+            $poReader->seek(1);
+            $this->fail('Expected OutOfBoundsException');
+        } catch (\OutOfBoundsException $e) {
+            static::assertSame('maximum offset: -1; requested offset: 1', $e->getMessage());
+            static::assertSame(1, $e->getCode());
+        }
+
+        static::assertNull($poReader->current());
+        static::assertFalse($poReader->valid());
+        static::assertSame(-1, $poReader->key());
     }
 
     public function testSeekOneItem(): void
@@ -211,42 +279,42 @@ class PoReaderTest extends Unit
             'msgstr "Hello világ"',
         ]);
         $fileHandler = fopen('php://memory', 'w+');
+        static::assertIsResource($fileHandler);
         fwrite($fileHandler, $fileContent);
 
         $poReader = new PoReader();
         $poReader->setFileHandler($fileHandler);
-        $this->tester->assertSame($fileHandler, $poReader->getFileHandler());
+        static::assertSame($fileHandler, $poReader->getFileHandler());
 
-        $this->tester->expectThrowable(
-            new \OutOfBoundsException(
-                'offset has to be >= 0; current -1',
-                1,
-            ),
-            function () use ($poReader) {
-                $poReader->seek(-1);
-            },
-        );
-        $this->tester->assertNull($poReader->current());
-        $this->tester->assertFalse($poReader->valid());
-        $this->tester->assertSame(-1, $poReader->key());
+        try {
+            // @phpstan-ignore-next-line
+            $poReader->seek(-1);
+            $this->fail('Expected OutOfBoundsException');
+        } catch (\OutOfBoundsException $error) {
+            static::assertSame('offset has to be >= 0; current -1', $error->getMessage());
+            static::assertSame(1, $error->getCode());
+        }
+
+        static::assertNull($poReader->current());
+        static::assertFalse($poReader->valid());
+        static::assertSame(-1, $poReader->key());
 
         $poReader->seek(0);
-        $this->tester->assertNotNull($poReader->current());
-        $this->tester->assertTrue($poReader->valid());
-        $this->tester->assertSame(0, $poReader->key());
+        static::assertNotNull($poReader->current());
+        static::assertTrue($poReader->valid());
+        static::assertSame(0, $poReader->key());
 
-        $this->tester->expectThrowable(
-            new \OutOfBoundsException(
-                'maximum offset: 0; requested offset: 1',
-                1,
-            ),
-            function () use ($poReader) {
-                $poReader->seek(1);
-            },
-        );
-        $this->tester->assertNull($poReader->current());
-        $this->tester->assertFalse($poReader->valid());
-        $this->tester->assertSame(0, $poReader->key());
+        try {
+            $poReader->seek(1);
+            $this->fail('Expected OutOfBoundsException');
+        } catch (\OutOfBoundsException $error) {
+            static::assertSame('maximum offset: 0; requested offset: 1', $error->getMessage());
+            static::assertSame(1, $error->getCode());
+        }
+
+        static::assertNull($poReader->current());
+        static::assertFalse($poReader->valid());
+        static::assertSame(0, $poReader->key());
     }
 
     public function testSeekTwoItem(): void
@@ -258,6 +326,7 @@ class PoReaderTest extends Unit
             'msgstr "Hello világ 1"',
         ]);
         $fileHandler = fopen('php://memory', 'w+');
+        static::assertIsResource($fileHandler);
         fwrite($fileHandler, $fileContent);
 
         $poReader = new PoReader();
@@ -265,33 +334,33 @@ class PoReaderTest extends Unit
 
         $poReader->seek(0);
         $poItem = $poReader->current();
-        $this->tester->assertSame(0, $poReader->key());
-        $this->tester->assertSame(['Hello world 0'], $poItem->msgid);
-        $this->tester->assertSame(['' => ['Hello világ 0']], $poItem->msgstr);
+        static::assertSame(0, $poReader->key());
+        static::assertSame(['Hello world 0'], $poItem->msgid);
+        static::assertSame(['' => ['Hello világ 0']], $poItem->msgstr);
 
         $poReader->next();
         $poItem = $poReader->current();
-        $this->tester->assertSame(1, $poReader->key());
-        $this->tester->assertSame(['Hello world 1'], $poItem->msgid);
-        $this->tester->assertSame(['' => ['Hello világ 1']], $poItem->msgstr);
+        static::assertSame(1, $poReader->key());
+        static::assertSame(['Hello world 1'], $poItem->msgid);
+        static::assertSame(['' => ['Hello világ 1']], $poItem->msgstr);
 
         $poReader->seek(0);
         $poItem = $poReader->current();
-        $this->tester->assertSame(0, $poReader->key());
-        $this->tester->assertSame(['Hello world 0'], $poItem->msgid);
-        $this->tester->assertSame(['' => ['Hello világ 0']], $poItem->msgstr);
+        static::assertSame(0, $poReader->key());
+        static::assertSame(['Hello world 0'], $poItem->msgid);
+        static::assertSame(['' => ['Hello világ 0']], $poItem->msgstr);
 
         $poReader->next();
         $poItem = $poReader->current();
-        $this->tester->assertSame(1, $poReader->key());
-        $this->tester->assertSame(['Hello world 1'], $poItem->msgid);
-        $this->tester->assertSame(['' => ['Hello világ 1']], $poItem->msgstr);
+        static::assertSame(1, $poReader->key());
+        static::assertSame(['Hello world 1'], $poItem->msgid);
+        static::assertSame(['' => ['Hello világ 1']], $poItem->msgstr);
 
         $poReader->seek(1);
         $poItem = $poReader->current();
-        $this->tester->assertSame(1, $poReader->key());
-        $this->tester->assertSame(['Hello world 1'], $poItem->msgid);
-        $this->tester->assertSame(['' => ['Hello világ 1']], $poItem->msgstr);
+        static::assertSame(1, $poReader->key());
+        static::assertSame(['Hello world 1'], $poItem->msgid);
+        static::assertSame(['' => ['Hello világ 1']], $poItem->msgstr);
     }
 
     public function testJsonSerialize(): void
@@ -305,20 +374,21 @@ class PoReaderTest extends Unit
             'msgstr "Hello világ 3"',
         ]);
         $fileHandler = fopen('php://memory', 'w+');
+        static::assertIsResource($fileHandler);
         fwrite($fileHandler, $fileContent);
 
         $poReader = new PoReader();
         $poReader->setFileHandler($fileHandler);
         $poReader->seek(1);
 
-        $this->tester->assertSame(
+        static::assertSame(
             [
-                'key' => 1,
                 'positions' => [
                     0 => 0,
                     1 => 46,
                 ],
                 'isAllReaded' => false,
+                'key' => 1,
             ],
             $poReader->jsonSerialize(),
         );
@@ -335,6 +405,7 @@ class PoReaderTest extends Unit
             'msgstr "Hello világ 2"',
         ]);
         $fileHandler = fopen('php://memory', 'w+');
+        static::assertIsResource($fileHandler);
         fwrite($fileHandler, $fileContent);
 
         $state = [
@@ -349,9 +420,9 @@ class PoReaderTest extends Unit
 
         $poReader = PoReader::__set_state($state);
         $poItem = $poReader->current();
-        $this->tester->assertTrue($poReader->valid());
-        $this->tester->assertSame(1, $poReader->key());
-        $this->tester->assertSame(['Hello world 1'], $poItem->msgid);
+        static::assertTrue($poReader->valid());
+        static::assertSame(1, $poReader->key());
+        static::assertSame(['Hello world 1'], $poItem->msgid);
     }
 
     public function testSetStateWithoutKey(): void
@@ -365,6 +436,7 @@ class PoReaderTest extends Unit
             'msgstr "Hello világ 2"',
         ]);
         $fileHandler = fopen('php://memory', 'w+');
+        static::assertIsResource($fileHandler);
         fwrite($fileHandler, $fileContent);
         fseek($fileHandler, 0);
 
@@ -379,9 +451,9 @@ class PoReaderTest extends Unit
 
         $poReader = PoReader::__set_state($state);
         $poItem = $poReader->current();
-        $this->tester->assertTrue($poReader->valid());
-        $this->tester->assertSame(0, $poReader->key());
-        $this->tester->assertSame(['Hello world 0'], $poItem->msgid);
+        static::assertTrue($poReader->valid());
+        static::assertSame(0, $poReader->key());
+        static::assertSame(['Hello world 0'], $poItem->msgid);
     }
 
     public function testSetStateContinue(): void
@@ -397,33 +469,32 @@ class PoReaderTest extends Unit
 
         $state = [];
         $result = $this->readByState($state, $fileContent, 2);
-        $this->assertSame(
+        static::assertSame(
             [
                 'msgidList' => [
                     'Hello world 0',
                     'Hello world 1',
                 ],
                 'state' => [
-                    'key' => 2,
                     'positions' => [
                         0 => 0,
                         1 => 46,
                         2 => 92,
                     ],
                     'isAllReaded' => false,
+                    'key' => 2,
                 ],
             ],
             $result,
         );
 
         $result = $this->readByState($result['state'], $fileContent, 2);
-        $this->assertSame(
+        static::assertSame(
             [
                 'msgidList' => [
                     'Hello world 2',
                 ],
                 'state' => [
-                    'key' => 2,
                     'positions' => [
                         0 => 0,
                         1 => 46,
@@ -431,15 +502,52 @@ class PoReaderTest extends Unit
                         3 => 136,
                     ],
                     'isAllReaded' => true,
+                    'key' => 2,
                 ],
             ],
             $result,
         );
     }
 
+    public function testSeekWithoutPositions(): void
+    {
+        $fileContent = implode("\n", [
+            'msgid "Hello world 0"',
+            'msgstr "Hello világ 0"',
+            'msgid "Hello world 1"',
+            'msgstr "Hello világ 1"',
+            'msgid "Hello world 2"',
+            'msgstr "Hello világ 2"',
+        ]);
+        $fileHandler1 = fopen('php://memory', 'w+');
+        static::assertIsResource($fileHandler1);
+        fwrite($fileHandler1, $fileContent);
+
+        fseek($fileHandler1, 46);
+        $poReader = new PoReader();
+        $poReader->setFileHandler($fileHandler1);
+        $poReader->next();
+        $poItem = $poReader->current();
+        static::assertSame(0, $poReader->key());
+        static::assertSame(['Hello world 1'], $poItem->msgid);
+
+        $poReader->rewind();
+        $poItem = $poReader->current();
+        static::assertSame(0, $poReader->key());
+        static::assertSame(['Hello world 1'], $poItem->msgid);
+    }
+
+    /**
+     * @phpstan-param array<string, mixed> $state
+     *
+     * @return array<string, mixed>
+     */
     protected function readByState(array $state, string $fileContent, int $limit): array
     {
         $fileHandler = fopen('php://memory', 'w+');
+        if (!$fileHandler) {
+            throw new \RuntimeException('Cannot open file handler');
+        }
         fwrite($fileHandler, $fileContent);
         fseek($fileHandler, 0);
 
@@ -458,33 +566,6 @@ class PoReaderTest extends Unit
         $result['state'] = $poReader->jsonSerialize();
 
         return $result;
-    }
-
-    public function testSeekWithoutPositions(): void
-    {
-        $fileContent = implode("\n", [
-            'msgid "Hello world 0"',
-            'msgstr "Hello világ 0"',
-            'msgid "Hello world 1"',
-            'msgstr "Hello világ 1"',
-            'msgid "Hello world 2"',
-            'msgstr "Hello világ 2"',
-        ]);
-        $fileHandler1 = fopen('php://memory', 'w+');
-        fwrite($fileHandler1, $fileContent);
-
-        fseek($fileHandler1, 46);
-        $poReader = new PoReader();
-        $poReader->setFileHandler($fileHandler1);
-        $poReader->next();
-        $poItem = $poReader->current();
-        $this->tester->assertSame(0, $poReader->key());
-        $this->tester->assertSame(['Hello world 1'], $poItem->msgid);
-
-        $poReader->rewind();
-        $poItem = $poReader->current();
-        $this->tester->assertSame(0, $poReader->key());
-        $this->tester->assertSame(['Hello world 1'], $poItem->msgid);
     }
 
     protected function convertInputPoToExpected(string $inputPo): string

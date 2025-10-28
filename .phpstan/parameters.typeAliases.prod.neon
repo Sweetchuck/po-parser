@@ -1,0 +1,59 @@
+parameters:
+	typeAliases:
+		sweetchuck-po-reader-reader-state-import: '''
+			array{
+				positions?: array<int<0, max>, int<0, max>>,
+				isAllReaded?: bool,
+				fileHandler?: ?resource,
+				key?: int<0, max>,
+			}
+		'''
+		sweetchuck-po-reader-reader-state-export: '''
+			array{
+				positions: array<int<0, max>, int<0, max>>,
+				isAllReaded: bool,
+				key: int<-1, max>,
+			}
+		'''
+		sweetchuck-po-reader-item-state-import: '''
+			array{
+				comments?: array<string>,
+				msgctxt?: array<string>,
+				msgid?: array<string>,
+				msgid_plural?: array<string>,
+				msgidPlural?: array<string>,
+				msgstr?: array<int|string, array<string>>,
+			}
+		'''
+		sweetchuck-po-reader-item-state-export: '''
+			array{
+				comments: array<string>,
+				msgctxt: array<string>,
+				msgid: array<string>,
+				msgidPlural: array<string>,
+				msgstr: array<int|string, array<string>>,
+			}
+		'''
+		sweetchuck-po-reader-comment-type: '"flag"|"previous"|"extracted"|"reference"|"translator"'
+		sweetchuck-po-reader-comment-item: '''
+			array{
+				type: sweetchuck-po-reader-comment-type,
+				weight?: int|float,
+				comment?: string,
+				poItem?: \Sweetchuck\PoParser\PoItem,
+				references?: array<string>,
+				flag?: string,
+			}
+		'''
+		sweetchuck-po-reader-comment-state-import: '''
+			array{
+				items?: array<sweetchuck-po-reader-comment-item>,
+				counters?: array<string, int>,
+			}
+		'''
+		sweetchuck-po-reader-comment-state-export: '''
+			array{
+				items: array<string, sweetchuck-po-reader-comment-item>,
+				counters: array<string, int>,
+			}
+		'''

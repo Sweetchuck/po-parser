@@ -8,11 +8,18 @@ namespace Sweetchuck\PoParser;
  * Case in-sensitive key-value storage.
  *
  * @link https://www.gnu.org/software/gettext/manual/gettext.html#Filling-in-the-Header-Entry
+ *
+ * @implements \ArrayAccess<string, string>
+ * @implements \IteratorAggregate<string, string>
  */
 class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSerializable, \Stringable
 {
+    /**
+     * @param iterable<string, string> $values
+     */
     public static function createFromIterable(iterable $values): static
     {
+        // @phpstan-ignore-next-line
         $self = new static();
         foreach ($values as $key => $value) {
             $self->offsetSet($key, $value);
@@ -23,7 +30,8 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
 
     public static function createFromString(string $string): static
     {
-        $poHeader = new PoHeader();
+        // @phpstan-ignore-next-line
+        $poHeader = new static();
         if ($string === '') {
             return $poHeader;
         }
@@ -47,9 +55,12 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
         return static::createFromString(implode("\n", $poItem->msgstr['']));
     }
 
+    /**
+     * @var array<string, array{key: string, value: string}>
+     */
     protected array $items = [];
 
-    //region ArrayAccess
+    //region \ArrayAccess
     /**
      * {@inheritdoc}
      */
@@ -73,6 +84,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
      */
     public function offsetSet($offset, $value): void
     {
+        // @phpstan-ignore-next-line
         if ($value === null) {
             $this->offsetUnset($offset);
 
@@ -97,16 +109,18 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
     }
     //endregion
 
-    // region Countable
+    // region \Countable
     public function count(): int
     {
         return count($this->items);
     }
     // endregion
 
-    //region IteratorAggregate
+    //region \IteratorAggregate
     /**
      * {@inheritdoc}
+     *
+     * @phpstan-return \ArrayIterator<string, string>
      */
     public function getIterator(): \ArrayIterator
     {
@@ -114,9 +128,11 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
     }
     //endregion
 
-    //region JsonSerializable
+    //region \JsonSerializable
     /**
      * {@inheritdoc}
+     *
+     * @return array<string, string>
      */
     public function jsonSerialize(): array
     {
@@ -129,7 +145,7 @@ class PoHeader implements \ArrayAccess, \Countable, \IteratorAggregate, \JsonSer
     }
     //endregion
 
-    //region Stringable
+    //region \Stringable
     /**
      * {@inheritdoc}
      */

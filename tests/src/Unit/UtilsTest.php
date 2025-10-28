@@ -4,17 +4,17 @@ declare(strict_types = 1);
 
 namespace Sweetchuck\PoParser\Tests\Unit;
 
-use Codeception\Test\Unit;
-use Sweetchuck\PoParser\Tests\UnitTester;
+use PHPUnit\Framework\TestCase;
 use Sweetchuck\PoParser\Utils;
 
 /**
  * @covers \Sweetchuck\PoParser\Utils
  */
-class UtilsTest extends Unit
+class UtilsTest extends TestCase
 {
-    protected UnitTester $tester;
-
+    /**
+     * @return array<string, mixed>
+     */
     public function casesLinesToPo(): array
     {
         return [
@@ -47,16 +47,21 @@ class UtilsTest extends Unit
     }
 
     /**
+     * @phpstan-param array<string> $lines
+     *
      * @dataProvider casesLinesToPo
      */
     public function testLinesToPo(string $expected, array $lines): void
     {
-        $this->tester->assertSame(
+        static::assertSame(
             $expected,
             Utils::linesToPo($lines),
         );
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function casesExplode(): array
     {
         return [
@@ -116,11 +121,13 @@ class UtilsTest extends Unit
     }
 
     /**
+     * @phpstan-param array<string> $expected
+     *
      * @dataProvider casesExplode
      */
     public function testExplode(array $expected, string $string): void
     {
-        $this->tester->assertSame(
+        static::assertSame(
             $expected,
             Utils::explode($string),
         );

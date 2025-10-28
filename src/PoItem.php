@@ -6,8 +6,12 @@ namespace Sweetchuck\PoParser;
 
 class PoItem implements \Stringable, \JsonSerializable
 {
+    /**
+     * @phpstan-param sweetchuck-po-reader-item-state-import $values
+     */
     public static function __set_state($values): static
     {
+        // @phpstan-ignore-next-line
         $self = new static();
         $propertyNames = [
             'comments' => 'comments',
@@ -19,6 +23,7 @@ class PoItem implements \Stringable, \JsonSerializable
         ];
         foreach ($propertyNames as $keyword => $propertyName) {
             if (array_key_exists($keyword, $values)) {
+                // @phpstan-ignore-next-line
                 $self->$propertyName = $values[$keyword];
             }
         }
@@ -28,6 +33,7 @@ class PoItem implements \Stringable, \JsonSerializable
 
     public static function createFromHeader(PoHeader $header): static
     {
+        // @phpstan-ignore-next-line
         $self = new static();
         $self->msgid[] = '';
         $self->msgstr[''] = Utils::explode((string) $header);
@@ -38,14 +44,14 @@ class PoItem implements \Stringable, \JsonSerializable
     /**
      * Lines without double quotes and trailing new line characters.
      *
-     * @var string[]
+     * @var array<string>
      */
     public array $comments = [];
 
     /**
      * Lines without double quotes and trailing new line characters.
      *
-     * @var string[]
+     * @var array<string>
      */
     public array $msgctxt = [];
 
@@ -73,6 +79,9 @@ class PoItem implements \Stringable, \JsonSerializable
      */
     public array $msgstr = [];
 
+    /**
+     * {@inheritdoc}
+     */
     public function __toString(): string
     {
         $result = '';
@@ -100,6 +109,11 @@ class PoItem implements \Stringable, \JsonSerializable
         return $result;
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @phpstan-return sweetchuck-po-reader-item-state-export
+     */
     public function jsonSerialize(): array
     {
         return [

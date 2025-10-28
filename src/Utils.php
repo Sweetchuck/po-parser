@@ -6,6 +6,9 @@ namespace Sweetchuck\PoParser;
 
 class Utils
 {
+    /**
+     * @phpstan-var non-empty-string
+     */
     public static string $eol = "\n";
 
     public static int $lineLength = 68;

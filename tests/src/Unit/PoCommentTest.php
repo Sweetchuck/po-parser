@@ -4,18 +4,18 @@ declare(strict_types = 1);
 
 namespace Sweetchuck\PoParser\Tests\Unit;
 
+use PHPUnit\Framework\TestCase;
 use Sweetchuck\PoParser\PoComment;
-use Codeception\Test\Unit;
 use Sweetchuck\PoParser\PoItem;
-use Sweetchuck\PoParser\Tests\UnitTester;
 
 /**
  * @covers \Sweetchuck\PoParser\PoComment
  */
-class PoCommentTest extends Unit
+class PoCommentTest extends TestCase
 {
-    protected UnitTester $tester;
-
+    /**
+     * @return array<string, mixed>
+     */
     public function casesToString(): array
     {
         return [
@@ -92,6 +92,8 @@ class PoCommentTest extends Unit
     }
 
     /**
+     * @phpstan-param array<array{method: string, args: array<mixed>}> $methodCalls
+     *
      * @dataProvider casesToString
      */
     public function testToString(string $expected, array $methodCalls): void
@@ -101,24 +103,24 @@ class PoCommentTest extends Unit
             $comment->{$methodCall['method']}(...$methodCall['args']);
         }
 
-        $this->assertSame($expected, (string) $comment);
+        static::assertSame($expected, (string) $comment);
     }
 
     public function testGetLastId(): void
     {
         $comment = new PoComment();
         $comment->setTranslator('Foo');
-        $this->tester->assertSame('translator:0', $comment->getLastId());
+        static::assertSame('translator:0', $comment->getLastId());
         $comment->setTranslator('Bar');
-        $this->tester->assertSame('translator:1', $comment->getLastId());
+        static::assertSame('translator:1', $comment->getLastId());
         $comment->setTranslator('Foo changed', 0, 'translator:0');
-        $this->tester->assertSame('translator:0', $comment->getLastId());
+        static::assertSame('translator:0', $comment->getLastId());
     }
 
     public function testSetState(): void
     {
         $comment = PoComment::__set_state([]);
-        $this->tester->assertSame(
+        static::assertSame(
             [
                 'items' => [],
                 'counters' => [
@@ -152,7 +154,7 @@ class PoCommentTest extends Unit
                 'reference' => 0,
             ],
         ]);
-        $this->tester->assertSame(
+        static::assertSame(
             [
                 'items' => [
                     'translator:0' => [
@@ -177,7 +179,7 @@ class PoCommentTest extends Unit
             $comment->jsonSerialize(),
         );
 
-        $this->tester->assertSame(
+        static::assertSame(
             implode("\n", [
                 '#  Foo',
                 '#, fuzzy',
@@ -187,7 +189,7 @@ class PoCommentTest extends Unit
         );
 
         $comment->delete('flag:fuzzy');
-        $this->tester->assertSame(
+        static::assertSame(
             implode("\n", [
                 '#  Foo',
                 '',
@@ -209,7 +211,7 @@ class PoCommentTest extends Unit
         $item->comments = $comment->toItemValue();
         $item->msgid = ['my-id-01'];
         $item->msgstr = ['' => ['my-str-01']];
-        $this->tester->assertSame(
+        static::assertSame(
             implode("\n", [
                 '#  Foo',
                 '#',

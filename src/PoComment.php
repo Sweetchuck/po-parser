@@ -6,8 +6,12 @@ namespace Sweetchuck\PoParser;
 
 class PoComment implements \JsonSerializable, \Stringable
 {
+    /**
+     * @phpstan-param sweetchuck-po-reader-comment-state-import $values
+     */
     public static function __set_state($values): static
     {
+        // @phpstan-ignore-next-line
         $self = new static();
         if (array_key_exists('items', $values)) {
             $self->items = $values['items'];
@@ -20,10 +24,13 @@ class PoComment implements \JsonSerializable, \Stringable
         return $self;
     }
 
+    /**
+     * @phpstan-var array<string, sweetchuck-po-reader-comment-item>
+     */
     protected array $items = [];
 
     /**
-     * @var int[]
+     * @var array<string, int>
      */
     protected array $counters = [
         'translator' => 0,
@@ -45,26 +52,32 @@ class PoComment implements \JsonSerializable, \Stringable
         foreach ($this->items as $item) {
             switch ($item['type']) {
                 case 'flag':
+                    assert(array_key_exists('flag', $item));
+                    assert(array_key_exists('comment', $item));
                     $prefix = '#, ';
                     $current = $item['flag'] . ($item['comment'] === '' ? '' : " {$item['comment']}");
                     break;
 
                 case 'previous':
+                    assert(array_key_exists('poItem', $item));
                     $prefix = '#| ';
                     $current = explode("\n", (string) $item['poItem']);
                     break;
 
                 case 'extracted':
+                    assert(array_key_exists('comment', $item));
                     $prefix = '#. ';
                     $current = explode("\n", $item['comment']);
                     break;
 
                 case 'reference':
+                    assert(array_key_exists('references', $item));
                     $prefix = '#: ';
                     $current = implode(' ', $item['references']);
                     break;
 
                 default:
+                    assert(array_key_exists('comment', $item));
                     $prefix = '#  ';
                     $current = $item['comment'];
                     break;
@@ -83,6 +96,11 @@ class PoComment implements \JsonSerializable, \Stringable
         return $content;
     }
 
+    /**
+     * {@inheritdoc}
+     *
+     * @phpstan-return sweetchuck-po-reader-comment-state-export
+     */
     public function jsonSerialize(): array
     {
         // @todo What about the ::$lastId?
@@ -92,6 +110,9 @@ class PoComment implements \JsonSerializable, \Stringable
         ];
     }
 
+    /**
+     * @return array<string>
+     */
     public function toItemValue(): array
     {
         return explode("\n", rtrim((string) $this));
@@ -139,6 +160,9 @@ class PoComment implements \JsonSerializable, \Stringable
         return $this;
     }
 
+    /**
+     * @phpstan-param array<string> $references
+     */
     public function setReference(array $references, int $weight = 0, ?string $id = null): static
     {
         $type = 'reference';
