@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-    codecov: 'codecov/codecov@5'
+    codecov: 'codecov/codecov@6'
 
 .env_app: &env_app
     SHELL: '/bin/bash'
@@ -140,4 +140,4 @@ workflows:
                         parameters:
                             executor:
                                 - 'php_min'
-                                #- 'php_plus1'
+                                - 'php_plus1'
